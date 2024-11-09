@@ -1,72 +1,91 @@
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
 struct node {
-    int coeff;
-    int expo;
-    struct node *link;
-} *poly1 = NULL, *poly2 = NULL, *psum = NULL, *ptr, *temp;
-
-void insertterm (struct node *p, int coefficient, int exponent) {
-	temp = (struct node *) malloc (sizeof(struct node));
-	if (p == NULL) {
-		p = temp;
-		temp->coeff = coefficient;
-		temp->expo = exponent;
-		temp->link = NULL;
-	}
-	else {
-		ptr = p;
-    	while (ptr->link != NULL) 
-        	ptr = ptr->link;
-    	ptr->link = temp;
-		temp->coeff = coefficient;
-		temp->expo = exponent;
-		temp->link = NULL;
-} }
-
-void display (struct node *p) {
-    ptr = p;
-    while (ptr != NULL) {        
-        if (ptr->expo != 0) {
-			printf("(%dx^%d) + ", ptr->coeff, ptr->expo);
-		}
-	    else 
-			printf("(%d)", ptr->coeff);
-		ptr = ptr->link;
-} }
-
-void computesum (struct node *p1, struct node *p2) {
-	if 	(p1->expo < p2->expo) 
-		insertterm(psum, p2->coeff, p2->expo);
-	else if (p1->expo == p2->expo)
-		insertterm(psum, (p1->coeff + p2->coeff), p1->expo);
-	else
-		insertterm(psum, p1->coeff, p1->expo);
+int coeff, expo;
+struct node* next;
+};
+struct node* createNode(int coeff, int expo) {
+struct node* newNode = (struct node*)malloc(sizeof(struct node));
+newNode->coeff = coeff;
+newNode->expo = expo;
+newNode->next = NULL;
+return newNode;
 }
-
-void main() {
-    int i,n1,n2,coefficient,exponent;
-    printf("Enter First Polynomial -");
-    printf("\nEnter number of terms: ");
-    scanf("%d",&n1);
-    for (i=0; i<n1; i++) {
-        printf("Enter coefficient and exponent for term %d: ",i+1);
-        scanf("%d %d", &coefficient, &exponent);
-        insertterm(poly1, coefficient, exponent);
-    }
-    printf("Enter Second Polynomial -");
-    printf("\nEnter number of terms: ");
-    scanf("%d",&n2);
-    for (i=0; i<n2; i++) {
-        printf("Enter coefficient and exponent for term %d: ",i+1);
-        scanf("%d %d", &coefficient, &exponent);
-        insertterm(poly2, coefficient, exponent);
-    }
-    printf("\nFirst Polynomial: ");
-    display(poly1);
-    printf("\nSecond Polynomial: ");
-    display(poly2);
-    computesum(poly1,poly2);
-    printf("\nSum of the two Polynomials: ");
-    display(psum);
+void insertNode(struct node* *poly, int coeff, int expo) {
+struct node* newNode = createNode(coeff, expo);
+if (*poly == NULL) {
+*poly = newNode;
+} else {
+struct node* temp = *poly;
+while (temp->next != NULL) {
+temp = temp->next;
+}
+temp->next = newNode;
+}
+}
+void displayPolynomial(struct node* poly) {
+while (poly != NULL) {
+printf("%dx^%d", poly->coeff, poly->expo);
+if (poly->next != NULL && poly->next->coeff >= 0) {
+printf("+");
+}
+poly = poly->next;
+}
+printf("\n");
+}
+struct node* addPolynomial(struct node* poly1, struct node* poly2) {
+struct node* result = NULL;
+while (poly1 != NULL && poly2 != NULL) {
+if (poly1->expo > poly2->expo) {
+insertNode(&result, poly1->coeff, poly1->expo);
+poly1 = poly1->next;
+} else if (poly1->expo < poly2->expo) {
+insertNode(&result, poly2->coeff, poly2->expo);
+poly2 = poly2->next;
+} else {
+int sumCoeff = poly1->coeff + poly2->coeff;
+if (sumCoeff != 0) {
+insertNode(&result, sumCoeff, poly1->expo);
+}
+poly1 = poly1->next;
+poly2 = poly2->next;
+}
+}
+while (poly1 != NULL) {
+insertNode(&result, poly1->coeff, poly1->expo);
+poly1 = poly1->next;
+}
+while (poly2 != NULL) {
+insertNode(&result, poly2->coeff, poly2->expo);
+poly2 = poly2->next;
+}
+return result;
+}
+int main() {
+struct node* poly1 = NULL;
+struct node* poly2 = NULL;
+struct node* sum = NULL;
+ int n, coeff, expo;
+printf("Enter no of terms in 1st polynomial: ");
+scanf("%d", &n);
+printf("Enter the terms in format (coeff expo):\n");
+for (int i = 0; i < n; i++) {
+scanf("%d %d", &coeff, &expo);
+insertNode(&poly1, coeff, expo);
+}
+printf("\nFirst polynomial is: ");
+displayPolynomial(poly1);
+printf("Enter no of terms in 2nd polynomial: ");
+scanf("%d", &n);
+printf("Enter the terms in format (coeff expo):\n");
+for (int i = 0; i < n; i++) {
+scanf("%d %d", &coeff, &expo);
+insertNode(&poly2, coeff, expo);
+}
+printf("\nSecond polynomial is: ");
+displayPolynomial(poly2);
+sum = addPolynomial(poly1, poly2);
+printf("\nSum of polynomials is: ");
+displayPolynomial(sum);
+return 0;
 }
